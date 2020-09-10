@@ -1,32 +1,54 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view />
-  </div>
+	<div id="app">
+		<Navigation :user="user" @logout="logout"/>
+		<router-view class="container" :user="user" @logout="logout"/>
+	</div>
 </template>
 
+<script>
+
+import Navigation from "@/components/Navigation.vue";
+import Firebase from "firebase";
+import db from "./db.js";
+
+export default {
+	name: "app",
+	data: function(){
+		return {
+			user:null
+		}
+	},
+	methods : {
+		logout : function (){
+			Firebase.auth().signOut().then (()=> {
+				this.user = null;
+				this.$router.push("login");
+
+			})
+		}
+	}
+	,
+	mounted(){
+		Firebase.auth().onAuthStateChanged(user => {
+			if (user) {
+				this.user = user.displayName;
+			}
+		});
+		db.collection("Users")
+		.doc("WnEm5vbP4DrcuMNgfdT6")
+		.get()
+		.then((response) => {
+			this.user = response.data().name;
+		});
+
+	},
+	components: {
+		Navigation
+	}
+};
+
+</script>
 <style lang="scss">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
-    }
-  }
-}
+$primary: #05b2dd;
+@import "node_modules/bootstrap/scss/bootstrap"; 
 </style>
